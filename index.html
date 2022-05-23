@@ -1,0 +1,102 @@
+<html>
+<head>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+<script>
+      $(document).ready(function(){
+        var htmlContent;
+        $("#submit").click(function(){
+          htmlContent=$("#htmlContent").val();
+          $('#htmlContentHidden').html(htmlContent);
+
+          var photos = [];
+
+          if ($('.article ul').length) {
+            for (var i=0; i < $('.article ul').length; i++) {
+              var children = $('.article ul')[i].nextSibling.children;
+              var title = $('.article ul')[i].outerText.replace(/[/\\?%*:|"<>]/g, '-').replace(/(\r\n|\n|\r)/gm, "");
+              
+              for (var j=0; j < children.length; j++) {
+                  if (children[j] && children[j].localName == 'img') {
+                      photos.push({
+                          index: photos.length,
+                          title: title + ' - ' + (j+1) + '.jpg',
+                          src: children[j].src
+                      });
+                  }
+              }
+            }
+          } else if ($('img').length) {
+            for (var i=0; i < $('img').length; i++) {
+              var title = $('#folderName').val().replace(/[/\\?%*:|"<>]/g, '-').replace(/(\r\n|\n|\r)/gm, "");
+              
+              if ($('img')[i] && $('img')[i].localName == 'img') {
+                  photos.push({
+                      index: photos.length,
+                      title: title + ' - ' + (i+1) + '.jpg',
+                      src: $('img')[i].src
+                  });
+              }
+            }
+          }
+
+          console.log('found photos', photos)
+
+          // Set timeout to prevent lazy loading
+            $.post("http://localhost:3000/handle",
+            {
+              photos: JSON.stringify(photos),
+              folderName: $('#folderName').val(),
+            });
+          });
+      });
+    </script>
+</head>
+<body>
+  <section class="hero is-warning">
+    <div class="hero-body">
+      <p class="title">
+        Beneylu Photo Downloader
+      </p>
+      <div class="container">
+        <div class="notification is-light">
+          <form>
+            <div class="field">
+              <label class="label">Folder name</label>
+              <div class="control">
+                <input class="input" type="text" id="folderName" placeholder="e.g. Semaine 25 - Les ateliers des petits">
+              </div>
+            </div>
+            
+            <div class="field">
+              <label class="label">HTML Code</label>
+              <div class="control">
+                <textarea id="htmlContent" class="textarea" placeholder="Print the article div's HTML code from blog post"></textarea>
+              </div>
+            </div>
+            
+            <div class="field is-grouped">
+              <div class="control">
+                <button type="reset" class="button is-link is-light">Reset</button>
+              </div>
+              <div class="control">
+                <button id="submit" class="button is-link">Submit</button>
+              </div>
+            </div>
+        
+            <div id="htmlContentHidden" style="display:none;"></div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+  <footer class="footer">
+    <div class="content has-text-centered">
+      <p>
+        <strong>Beneylu Photo Downloader</strong> by <a href="https://github.com/ismailnguyen">ismailnguyen</a>.
+      </p>
+    </div>
+  </footer>
+  
+</body>
+</html>
