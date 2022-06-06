@@ -16,7 +16,7 @@ app.post('/handle', (req, res) => {
     const imageDownloader = require("image-downloader");
 
     for (const photo of photos) {
-        var dir = 'out/' + folderName + '/';
+        var dir = (folderName.startsWith('/') ? '' : __dirname + '/out/') + folderName + '/';
         if (!fs.existsSync(dir)) {
             fs.mkdirSync(dir, { recursive: true });
         }
@@ -24,7 +24,7 @@ app.post('/handle', (req, res) => {
         imageDownloader
         .image({
             url: photo.src,
-            dest: __dirname + '/' + dir + photo.title,
+            dest:  dir + photo.title,
         })
         .then(({ filename }) => {
             console.log("file saved" + filename);
