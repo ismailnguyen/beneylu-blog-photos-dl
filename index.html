@@ -1,54 +1,108 @@
 <html>
-<head>
-<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
-<script>
-      $(document).ready(function(){
-        var htmlContent;
-        $("#submit").click(function(){
-          htmlContent=$("#htmlContent").val();
-          $('#htmlContentHidden').html(htmlContent);
+  <head>
+    <title>Beneylu Photo Downloader</title>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+  <script>
 
-          var photos = [];
+      function init () {
+        // Get folderName from localStorage and set it to the input field
+        var folderName = localStorage.getItem('folderName');
+        if (folderName != null) {
+          $('#folderName').val(folderName);
+        }
+      }
 
-          if ($('.article ul').length) {
-            for (var i=0; i < $('.article ul').length; i++) {
-              var children = $('.article ul')[i].nextSibling.children;
-              var title = $('.article ul')[i].outerText.replace(/[/\\?%*:|"<>]/g, '-').replace(/(\r\n|\n|\r)/gm, "");
-              
-              for (var j=0; j < children.length; j++) {
-                  if (children[j] && children[j].localName == 'img') {
-                      photos.push({
-                          index: photos.length,
-                          title: title + ' - ' + (j+1) + '.jpg',
-                          src: children[j].src
-                      });
-                  }
+      function saveFolderName (folderName) {
+        localStorage.setItem('folderName', folderName);
+      }
+
+      function downloadPhotos(photos, folderName) {
+        console.log('found photos', photos)
+
+        $.post('/handle',
+          {
+            photos: JSON.stringify(photos),
+            folderName: folderName,
+          }
+        );
+      }
+
+      function getDefaultPhotoTitleBase (folderName) {
+        var defautPhotoTitleBase = folderName;;
+            
+        // If title is a set of folders, take the last one as the title for file
+        if (defautPhotoTitleBase.indexOf('/') > -1) {
+          var splittedTitle = defautPhotoTitleBase.split('/');
+          defautPhotoTitleBase = splittedTitle[splittedTitle.length - 1];
+        }
+        
+        defautPhotoTitleBase = defautPhotoTitleBase.replace(/[/\\?%*:|"<>]/g, '-').replace(/(\r\n|\n|\r)/gm, "");
+
+        return defautPhotoTitleBase;
+      }
+
+      function findPhotos() {
+        var photos = [];
+
+        if ($('img').length) {
+          // By default use the folder name as photo's title
+          var defautPhotoTitle = getDefaultPhotoTitleBase($('#folderName').val());
+
+          for (var i=0; i < $('img').length; i++) {
+            var title = defautPhotoTitle;
+
+            if ($('img')[i] && $('img')[i].localName == 'img') {
+              // But if there is a subtitle stored into list element, use it instead for photo's title
+              if ($('.article ul').length) {
+                // Oftenly the previous parent element from the image's node contains the subtitle
+                var previousParentSibling = $('img')[i].parentNode.previousSibling;
+
+                // If previous node is not the subtitle, use the previous of the previous until we find the subtitle's node
+                while (previousParentSibling.nodeType != 1) {
+                  previousParentSibling = previousParentSibling.previousSibling;
+                }
+
+                var subtitle = previousParentSibling.outerText.replace(/[/\\?%*:|"<>]/g, '-').replace(/(\r\n|\n|\r)/gm, '').trim();
+
+                // If a subtitle is found, use it as photo's title
+                if (subtitle) {
+                  title = subtitle;
+                }
               }
-            }
-          } else if ($('img').length) {
-            for (var i=0; i < $('img').length; i++) {
-              var title = $('#folderName').val().replace(/[/\\?%*:|"<>]/g, '-').replace(/(\r\n|\n|\r)/gm, "");
-              
-              if ($('img')[i] && $('img')[i].localName == 'img') {
-                  photos.push({
-                      index: photos.length,
-                      title: title + ' - ' + (i+1) + '.jpg',
-                      src: $('img')[i].src
-                  });
-              }
+
+              photos.push({
+                  index: photos.length,
+                  title: title + ' - ' + (i+1) + '.jpg',
+                  src: $('img')[i].src
+              });
             }
           }
+        }
 
-          console.log('found photos', photos)
+        return photos;
+      }
 
-          // Set timeout to prevent lazy loading
-            $.post("http://localhost:3000/handle",
-            {
-              photos: JSON.stringify(photos),
-              folderName: $('#folderName').val(),
-            });
-          });
+      function handleFormSubmit () {
+        $("#submit").click(function(e) {
+          e.preventDefault();
+          var folderName = $('#folderName').val();
+
+          // Store the HTML content into a hidden field to then parse it from DOM
+          $('#htmlContentHidden').html($('#htmlContent').val());
+
+          var photos = findPhotos();
+
+          // Store forlder name for next times
+          saveFolderName(folderName);
+
+          downloadPhotos(photos, folderName);
+        });
+      }
+     
+      $(document).ready(function() {
+        init();
+        handleFormSubmit();
       });
     </script>
 </head>
