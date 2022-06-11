@@ -1,10 +1,10 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
   <head>
     <title>Beneylu Photo Downloader</title>
-  <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
-  <script>
-
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+    <script>
       function init () {
         // Get folderName from localStorage and set it to the input field
         var folderName = localStorage.getItem('folderName');
@@ -25,7 +25,13 @@
             photos: JSON.stringify(photos),
             folderName: folderName,
           }
-        );
+        ).done((message) => {
+          alert(message); 
+
+          // Clear form
+          $('#htmlContent').val('');
+          $('#htmlContentHidden').val('');
+        });
       }
 
       function getDefaultPhotoTitleBase (folderName) {
@@ -86,6 +92,8 @@
       function handleFormSubmit () {
         $("#submit").click(function(e) {
           e.preventDefault();
+          $('#openFolderLink').hide();
+
           var folderName = $('#folderName').val();
 
           // Store the HTML content into a hidden field to then parse it from DOM
