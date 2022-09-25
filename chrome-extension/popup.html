@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title>Beneylu Photo Scrapper</title>
+
+	<script src="jquery-3.1.1.min.js"></script>
+    <script src="popup.js"></script>
+	
+	<link rel="stylesheet" href="bulma.min.css">
+	
+	<style>
+		body {
+			font-family: "Segoe UI", "Lucida Grande", Tahoma, sans-serif;
+			font-size: 100%;
+		}
+		
+		* {
+			margin: 0;
+			position: relative;
+		}
+
+		body {
+		  color: #162056;
+		  background: #f8f9fa;
+		}
+		
+		.box {
+			background: none;
+			border: none;
+			box-shadow: none;
+		}
+
+        .fadeOutUp {
+            animation-name: fadeOutUp;
+            animation-duration: 2s;
+            animation-fill-mode: both;
+        }
+
+        @keyframes fadeOutUp {
+            from {
+                opacity: 1;
+            }
+
+            0% {
+                opacity: 0;
+                background: rgba(0,0,0,.7);
+            }
+            
+            50% {
+                opacity: 1;
+                transform: translate3d(0, 50px, 0);
+                background: #48c774;
+            }
+            
+            100% {
+                opacity: 0;
+                transform: translate3d(0, -200px, 0);
+            }
+        }
+    </style>
+  </head>
+  <body>
+
+    <section class="hero">
+        <div class="hero-body">
+          <div class="container has-text-centered">
+              <img src="icon48.png" alt="Beneylu Photo Scrapper" title="Beneylu Photo Scrapper" />
+              <h1>Photo Scrapper</h1>
+            </div>
+
+            <div class="box">
+                <div class="field">
+                    <label for="server-base-url-input" class="label">Server base URL</label>
+                    <div class="control">
+                        <input id="server-base-url-input" type="text" placeholder="e.g. localhost:3000" class="input" required>
+                    </div>
+                </div><div class="field">
+                    <label for="base-folder-input" class="label">Base folder</label>
+                    <div class="control">
+                        <input id="base-folder-input" type="text" placeholder="e.g. /Drive/ ..." class="input" required>
+                    </div>
+                </div>
+                <div class="field">
+                    <label for="current-folder-input" class="label">Current folder</label>
+                    <div class="control">
+                        <input id="current-folder-input" type="text" placeholder="e.g." class="input" required>
+                    </div>
+                </div>
+                <div class="field">
+                    <button class="button is-success" id="download-btn">
+                        Download
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+	<noscript>Please enable JavaScript to use this application</noscript>
+  </body>
+</html>

@@ -1,7 +1,9 @@
 const express = require("express");
+const cors = require('cors');
 const bodyParser = require("body-parser");
 const app = express();
 
+app.use(cors());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
@@ -10,7 +12,14 @@ app.get('/', (req, res) => {
 });
 
 app.post('/handle', (req, res) => {
-    var photos = JSON.parse(req.body.photos);
+    console.log('body', req.body)
+    const body = req.body;
+    if (!body || !body.photos || !body.folderName) {
+        res.status(400).end('Bad request');
+        return;
+    }
+
+    var photos = req.body.photos;
     var folderName = req.body.folderName;
     const fs = require('fs');
     const imageDownloader = require("image-downloader");
