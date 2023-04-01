@@ -2,12 +2,40 @@ function save() {
 	let config = {
         serverBaseUrl: $('#server-base-url-input').val(),
         baseFolder: $('#base-folder-input').val(),
-        currentFolder: $('#current-folder-input').val()
+        folderName: $('#folder-name-input').val(),
+        subFolderName: $('#subfolder-name-input').val()
     }
 	
     if (chrome && chrome.storage && chrome.storage.local) {
         chrome.storage.local.set({ beneylu_photo_scrapper_config: config });
     }
+}
+
+async function findTitle(tabId) {
+    const [{result}] = await chrome.scripting.executeScript({
+      func: () => {
+        var title = '';
+        // Get all images inside of "article" class div
+        if (window.document.querySelectorAll('.first-article-title')) {
+            title = window.document.querySelectorAll('.first-article-title')[0].innerHTML;
+        }
+
+        if (title.indexOf('-') > 0) {
+            let splittedTitle = title.split(' - ');
+            // remove the first part before '-' (e.g. Semaine du )
+            splittedTitle = splittedTitle.splice(1, splittedTitle.length);
+            title = splittedTitle.join(' - ');
+        }
+        
+        return title;
+    },
+      target: {
+        tabId: tabId ??
+          (await chrome.tabs.query({active: true, currentWindow: true}))[0].id
+      },
+      world: 'MAIN',
+    });
+    return result;
 }
 
 async function getPhotos(name, tabId) {
@@ -75,18 +103,28 @@ async function getPhotos(name, tabId) {
       world: 'MAIN',
     });
     return result;
-  }
+}
 
 $(document).ready(function () {
     // When popup opens
     // retrieve already used folder paths from config and fill inputs with config value
     if (chrome && chrome.storage && chrome.storage.local) {
-        chrome.storage.local.get(['beneylu_photo_scrapper_config'], function(result) {
+        chrome.storage.local.get(['beneylu_photo_scrapper_config'], async function(result) {
             var config = result.beneylu_photo_scrapper_config
             if (config) {
                 $('#server-base-url-input').val(config.serverBaseUrl),
                 $('#base-folder-input').val(config.baseFolder)
-                $('#current-folder-input').val(config.currentFolder)
+                $('#folder-name-input').val(config.folderName)
+
+                // try to find title based on article title
+                let title = await findTitle();
+
+                // title detetction failed, fallback to latest saved title
+                if (!title) {
+                    title = config.subFolderName;
+                }
+
+                $('#subfolder-name-input').val(title)
             }
         })
     }
@@ -95,7 +133,11 @@ $(document).ready(function () {
         // Send a background message to "main.js" to ask to scrap page content and send it to server
         // using given base and current folder paths
         const serverBaseUrl = $('#server-base-url-input').val();
-        const folderName = $('#base-folder-input').val() + $('#current-folder-input').val();
+        const folderName = $('#base-folder-input').val()
+                            + $('#folder-name-input').val()
+                            + '/'
+                            // Concat top folder name in the sub folder's name
+                            + $('#folder-name-input').val() + ' - ' + $('#subfolder-name-input').val();
         const photos = await getPhotos(folderName);
 
         chrome.runtime.sendMessage({ 
