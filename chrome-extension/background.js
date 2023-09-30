@@ -20,6 +20,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             }
         )
     }
+    else if (message.type === 'exit') {
+        const { serverBaseUrl } = message;
+
+        fetch(serverBaseUrl + '/' + message.type)
+    }
 
     sendResponse('photos sent to ' + serverBaseUrl + ' for download...')
 });

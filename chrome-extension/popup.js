@@ -110,11 +110,13 @@ $(document).ready(function () {
     // retrieve already used folder paths from config and fill inputs with config value
     if (chrome && chrome.storage && chrome.storage.local) {
         chrome.storage.local.get(['beneylu_photo_scrapper_config'], async function(result) {
-            var config = result.beneylu_photo_scrapper_config
+            var config = result.beneylu_photo_scrapper_config;
             if (config) {
-                $('#server-base-url-input').val(config.serverBaseUrl),
-                $('#base-folder-input').val(config.baseFolder)
-                $('#folder-name-input').val(config.folderName)
+                $('#server-base-url-input').val(config.serverBaseUrl);
+                $('#base-folder-input').val(config.baseFolder);
+
+
+                $('#folder-name-input').val(config.folderName);
 
                 // try to find title based on article title
                 let title = await findTitle();
@@ -162,5 +164,16 @@ $(document).ready(function () {
                 }
             )
         })
+    })
+
+    $('#exit-btn').click(async function() {
+        const serverBaseUrl = $('#server-base-url-input').val();
+
+        chrome.runtime.sendMessage({ 
+            type: 'exit',
+            serverBaseUrl: serverBaseUrl,
+        })
+
+        window.close();
     })
 })

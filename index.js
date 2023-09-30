@@ -46,6 +46,10 @@ app.post('/handle', (req, res) => {
     }
 });
 
+app.get('/exit', (res) => {
+    process.exit(0)
+});
+
 app.listen(3000,() => {
     console.log("Started on PORT 3000");
 })
